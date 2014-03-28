@@ -6,14 +6,18 @@ class Frame
   end
 
   def roll roll_amount
-    unless roll_amount > 10 || roll_amount < 0
+    if (roll_amount <= 10 && roll_amount >= 0) && self.needs_more_rolls?
       rolls << roll_amount
     end
 
   end
 
   def needs_more_rolls?
-    if rolls[0] == 10 && rolls.size < 3
+    if rolls.size == 0
+      return true
+    elsif rolls[0] == 10 && rolls.size < 3
+      return true
+    elsif rolls[0] < 10 && rolls.size == 1
       return true
     end
     false

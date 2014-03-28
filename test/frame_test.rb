@@ -15,7 +15,7 @@ describe Frame do
       @frame = Frame.new
     end
 
-    describe 'invalid rolls' do
+    describe 'invalid rolls / inputs' do
       it 'should reject rolls over the maximum allowed amount' do
         @frame.roll(invalid_roll_too_many)
         @frame.rolls.size.must_equal 0
@@ -33,23 +33,34 @@ describe Frame do
         @frame.roll strike
       end
 
-      it 'should not calculate the score with no registered bonus rolls' do
+      it 'should not calculate the score with no bonus rolls' do
+        @frame.score.must_be_nil
+        @frame.rolls.size.must_equal 1
+      end
+
+      it 'should register that it needs more rolls to calculate score after strike' do
+        @frame.needs_more_rolls?.must_equal true
+      end
+
+      it 'should register still need 1 more roll to calculate score after strike and a bonus roll' do
+        @frame.roll strike
+        @frame.needs_more_rolls?.must_equal true
+        @frame.rolls.size.must_equal 2
         @frame.score.must_be_nil
       end
 
-      it 'should register that it needs further rolls to calculate score after strike' do
-        @frame.needs_more_rolls?.must_equal true
-      end
-
-      it 'should register that it needs 1 further roll to calculate score after strike and a bonus roll' do
-        @frame.roll strike
-        @frame.needs_more_rolls?.must_equal true
-      end
-
-      it 'should not accept any further rolls after max bonus rolls have been registered' do
+      it 'should not accept any further rolls after all bonus rolls have been rolled' do
         @frame.roll strike
         @frame.roll strike
         @frame.needs_more_rolls?.must_equal false
+        @frame.rolls.size.must_equal 3
+      end
+
+      it 'should not allow any extra bonus rolls' do
+        @frame.roll (0..10).to_a.sample
+        @frame.roll strike
+        @frame.roll strike
+        @frame.rolls.size.must_equal 3
       end
 
       it 'should not calculate the score with one bonus roll' do
@@ -82,7 +93,6 @@ describe Frame do
       it 'should register a valid second roll' do
         @frame.roll first_roll_non_strike
         @frame.roll second_roll_non_spare
-
         @frame.rolls.size.must_equal 2
         @frame.rolls[0].must_equal first_roll_non_strike
         @frame.rolls[1].must_equal second_roll_non_spare
