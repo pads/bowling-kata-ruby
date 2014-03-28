@@ -4,135 +4,312 @@ require_relative '../lib/frame'
 require_relative 'minitest_helper'
 
 describe Frame do
-    let(:strike) { 10 }
-    let(:first_roll_non_strike) { 3 }
-    let(:second_roll_non_spare) { 2 }
-    let(:second_roll_spare) { 7 }
+    let(:strike_roll) { 10 }
+    let(:any_roll) { (0..10).to_a.sample }
+    
     let(:invalid_roll_too_many) { 15 }
     let(:invalid_roll_less_than_zero) { -1 }
+
+    let(:non_strike_roll) { (0..9).to_a.sample }
+    let(:non_strike_spare_roll) { 10 - non_strike_roll }
+    let(:non_strike_non_spare_roll) { non_strike_spare_roll - 1 }
+
 
     before do
       @frame = Frame.new
     end
 
-    describe 'invalid rolls / inputs' do
-      it 'should reject rolls over the maximum allowed amount' do
-        @frame.roll(invalid_roll_too_many)
-        @frame.rolls.size.must_equal 0
+    describe 'a new frame' do
+
+      it 'should be in normal game mode' do
+        @frame.mode.must_equal 'normal'
       end
 
-      it 'should reject rolls under the minimum allowed amount' do
-        @frame.roll(invalid_roll_less_than_zero)
-        @frame.rolls.size.must_equal 0
-      end
-    end
-
-    describe 'a strike frame' do
-
-      before do
-        @frame.roll strike
+      it 'should have no rolls' do
+        @frame.rolls.must_equal []
       end
 
-      it 'should not calculate the score with no bonus rolls' do
-        @frame.score.must_be_nil
-        @frame.rolls.size.must_equal 1
-      end
-
-      it 'should register that it needs more rolls to calculate score after strike' do
-        @frame.needs_more_rolls?.must_equal true
-      end
-
-      it 'should register still need 1 more roll to calculate score after strike and a bonus roll' do
-        @frame.roll strike
-        @frame.needs_more_rolls?.must_equal true
-        @frame.rolls.size.must_equal 2
-        @frame.score.must_be_nil
-      end
-
-      it 'should not accept any further rolls after all bonus rolls have been rolled' do
-        @frame.roll strike
-        @frame.roll strike
-        @frame.needs_more_rolls?.must_equal false
-        @frame.rolls.size.must_equal 3
-      end
-
-      it 'should not allow any extra bonus rolls' do
-        @frame.roll (0..10).to_a.sample
-        @frame.roll strike
-        @frame.roll strike
-        @frame.rolls.size.must_equal 3
-      end
-
-      it 'should not calculate the score with one bonus roll' do
-        @frame.roll strike
-        @frame.score.must_be_nil
-      end
-
-      it 'should calculate the correct score when the bouns rolls have been rolled' do
-        random_roll = (0..10).to_a.sample
-        frame_score = strike + strike + random_roll
-        @frame.roll strike
-        @frame.roll random_roll
-        @frame.score.must_equal frame_score
+      it 'should not be able to calculate its score' do
+        @frame.score.must_equal nil
       end
 
     end
 
-    describe 'a spare frame' do
+    describe 'the first roll' do
 
-    end
-
-    describe 'a non bouns frame' do
-
-      it 'should register a valid initial roll' do
-        @frame.roll first_roll_non_strike
-        @frame.rolls.size.must_equal 1
-        @frame.rolls[0].must_equal first_roll_non_strike
+      it 'should ignore a roll below zero' do
+        @frame.register_roll invalid_roll_less_than_zero
+        @frame.rolls.must_equal []
       end
 
-      it 'should register a valid second roll' do
-        @frame.roll first_roll_non_strike
-        @frame.roll second_roll_non_spare
-        @frame.rolls.size.must_equal 2
-        @frame.rolls[0].must_equal first_roll_non_strike
-        @frame.rolls[1].must_equal second_roll_non_spare
+      it 'should ignore a roll above maximum pins available' do
+        @frame.register_roll invalid_roll_too_many
+        @frame.rolls.must_equal []
       end
 
-      it 'should not let you register any further rolls' do
-        skip
+      describe 'a strike roll' do
+
+        before do
+          @frame.register_roll strike_roll
+        end
+
+        it 'should register the roll' do
+          @frame.rolls.must_equal [strike_roll]
+        end
+
+        it 'should change to bonus mode' do
+          @frame.mode.must_equal 'bonus'
+        end
+
+        it 'should not be able to calculate its score' do
+          @frame.score.must_be_nil
+        end
+
       end
 
-      it 'should reflect the correct score' do
-        skip
-        @frame.roll first_roll_non_strike
-        @frame.roll second_roll_non_spare
+      describe 'a non strike' do
+
+        before do
+          @frame.register_roll non_strike_roll
+        end
+
+        it 'should register the roll' do
+          @frame.rolls.must_equal [non_strike_roll]
+        end
+
+        it 'should stay in normal mode' do
+          @frame.mode.must_equal 'normal'
+        end
+
+        it 'should not be able to calculate its score' do
+          @frame.score.must_be_nil
+        end
 
       end
 
     end
 
-  describe 'bowling a frame' do
+    describe 'the second roll' do
 
-    it 'should allow a second roll when not a strike on first roll' do
-      skip
+      it 'should ignore a roll below zero' do
+        @frame.register_roll any_roll
+        @frame.register_roll invalid_roll_less_than_zero
+        @frame.rolls.must_equal [any_roll]
+      end
+
+      describe 'after a strike' do
+
+        before do
+          @frame.register_roll strike_roll
+        end
+
+        it 'should ignore a roll above maximum pins available' do
+          @frame.register_roll invalid_roll_too_many
+          @frame.rolls.must_equal [strike_roll]
+        end
+
+        describe 'a strike roll' do
+
+          before do
+            @frame.register_roll strike_roll
+          end
+
+          it 'should register the roll' do
+            @frame.rolls.must_equal [strike_roll, strike_roll]
+          end
+
+          it 'should stay in bonus mode' do
+            @frame.mode.must_equal 'bonus'
+          end
+
+          it 'should not be able to calculate its score' do
+            @frame.score.must_be_nil
+          end
+
+        end
+
+        describe 'non strike roll' do
+
+          before do
+            @frame.register_roll non_strike_roll
+          end
+
+          it 'should register the roll' do
+            @frame.rolls.must_equal [strike_roll, non_strike_roll]
+          end
+
+          it 'should stay in bonus mode' do
+            @frame.mode.must_equal 'bonus'
+          end
+
+          it 'should not be able to calculate its score' do
+            @frame.score.must_be_nil
+          end
+
+        end
+
+      end
+
+      describe 'after a non strike' do
+
+        before do
+          @frame.register_roll non_strike_roll
+        end
+
+        it 'should ignore a roll below zero' do
+          @frame.register_roll invalid_roll_less_than_zero
+          @frame.rolls.must_equal [non_strike_roll]
+        end
+
+        it 'should ignore a roll above maximum pins available' do
+          @frame.register_roll non_strike_spare_roll + 1
+          @frame.rolls.must_equal [non_strike_roll]
+        end
+
+        describe 'roll a spare' do
+
+          before do
+            @frame.register_roll non_strike_spare_roll
+          end
+
+          it 'should register the roll' do
+            @frame.rolls.must_equal [non_strike_roll, non_strike_spare_roll]
+          end
+
+          it 'should change to bonus mode' do
+            @frame.mode.must_equal 'bonus'
+          end
+
+          it 'should not be able to calculate its score' do
+            @frame.score.must_be_nil
+          end
+
+        end
+
+        describe 'roll a non spare' do
+
+          before do
+            @frame.register_roll non_strike_non_spare_roll
+          end
+
+          it 'should register the roll' do
+            @frame.rolls.must_equal [non_strike_roll, non_strike_non_spare_roll]
+          end
+
+          it 'should change to complete mode' do
+            @frame.mode.must_equal 'complete'
+          end
+
+          it 'should be able to calculate its score' do
+            @frame.score.must_equal non_strike_roll + non_strike_non_spare_roll
+          end
+
+          it 'should not accept any more rolls' do
+            @frame.register_roll any_roll
+            @frame.rolls.must_equal [non_strike_roll, non_strike_non_spare_roll]
+          end
+
+        end
+
+      end
+
     end
 
-    it 'should allow 2 bouns rolls when you strike' do
-      skip
-    end
+    describe 'the third roll' do
 
-    it 'should allow 1 bonus roll where you roll a spare' do
-      skip
-    end
+      describe 'after a second strike' do
+        before do
+          @frame.register_roll strike_roll
+          @frame.register_roll strike_roll
+        end
 
-    it 'should not allow bonus rolls if not a strike' do
-      skip
-    end
+        it 'should ignore a roll below zero' do
+          @frame.register_roll invalid_roll_less_than_zero
+          @frame.rolls.must_equal [strike_roll, strike_roll]
+        end
 
-    it 'should not allow a bonus roll if not a spare' do
-      skip
-    end
+        it 'should ignore a roll above maximum pins available' do
+          @frame.register_roll invalid_roll_too_many
+          @frame.rolls.must_equal [strike_roll, strike_roll]
+        end
 
-  end
+        describe 'a strike roll' do
+
+          before do
+            @frame.register_roll strike_roll
+          end
+
+          it 'should register a valid roll' do
+            @frame.rolls.must_equal [strike_roll,strike_roll,strike_roll]
+          end
+
+          it 'should change to completed mode' do
+            @frame.mode.must_equal 'complete'
+          end
+
+          it 'should be able to calculate its score' do
+            @frame.score.must_equal strike_roll + strike_roll + strike_roll
+          end
+
+        end
+
+      end
+
+      describe 'after a spare' do
+        before do
+          @frame.register_roll non_strike_roll
+          @frame.register_roll non_strike_spare_roll
+        end
+
+        it 'should ignore a roll below zero' do
+          @frame.register_roll invalid_roll_less_than_zero
+          @frame.rolls.must_equal [non_strike_roll, non_strike_spare_roll]
+        end
+
+        it 'should ignore a roll above maximum pins available' do
+          @frame.register_roll invalid_roll_too_many
+          @frame.rolls.must_equal [non_strike_roll, non_strike_spare_roll]
+        end
+
+        describe 'any valid roll'do
+
+          before do
+            @frame.register_roll any_roll
+          end
+
+          it 'should register the roll' do
+            @frame.rolls.must_equal [non_strike_roll,non_strike_spare_roll,any_roll]
+          end
+          it 'should change to completed mode' do
+            @frame.mode.must_equal 'complete'
+          end
+
+          it 'should be able to calculate its score' do
+            @frame.score.must_equal non_strike_roll + non_strike_spare_roll + any_roll
+          end
+
+        end
+
+      end
+
+      describe 'after a non spare' do
+        before do
+          @frame.register_roll non_strike_roll
+          @frame.register_roll non_strike_non_spare_roll
+        end
+
+        it 'should not register any further rolls' do
+          @frame.register_roll any_roll
+          @frame.rolls.must_equal [non_strike_roll,non_strike_non_spare_roll]
+        end
+
+        it 'should stay as complete mode' do
+          @frame.register_roll any_roll
+          @frame.mode.must_equal 'complete'
+        end
+
+      end
+
+    end
 
 end
