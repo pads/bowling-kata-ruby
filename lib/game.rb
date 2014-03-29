@@ -12,10 +12,10 @@ class Game
 
    def bowl roll
      frames.each do |frame|
-       if frame.mode == 'bonus'
+       if frame.mode == :bonus
          frame.register_roll roll
        end
-       if frame.mode == 'normal'
+       if frame.mode == :normal
          frame.register_roll roll
          break
        end

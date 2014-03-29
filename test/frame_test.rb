@@ -21,7 +21,7 @@ describe Frame do
 
     describe 'a new frame' do
       it 'should be in normal game mode' do
-        @frame.mode.must_equal 'normal'
+        @frame.mode.must_equal :normal
       end
       it 'should have no rolls' do
         @frame.rolls.must_equal []
@@ -49,7 +49,7 @@ describe Frame do
           @frame.rolls.must_equal [strike_roll]
         end
         it 'should change to bonus mode' do
-          @frame.mode.must_equal 'bonus'
+          @frame.mode.must_equal :bonus
         end
         it 'should not be able to calculate its score' do
           @frame.score.must_be_nil
@@ -64,7 +64,7 @@ describe Frame do
           @frame.rolls.must_equal [non_strike_roll]
         end
         it 'should stay in normal mode' do
-          @frame.mode.must_equal 'normal'
+          @frame.mode.must_equal :normal
         end
         it 'should not be able to calculate its score' do
           @frame.score.must_be_nil
@@ -96,7 +96,7 @@ describe Frame do
             @frame.rolls.must_equal [strike_roll, strike_roll]
           end
           it 'should stay in bonus mode' do
-            @frame.mode.must_equal 'bonus'
+            @frame.mode.must_equal :bonus
           end
           it 'should not be able to calculate its score' do
             @frame.score.must_be_nil
@@ -111,7 +111,7 @@ describe Frame do
             @frame.rolls.must_equal [strike_roll, non_strike_roll]
           end
           it 'should stay in bonus mode' do
-            @frame.mode.must_equal 'bonus'
+            @frame.mode.must_equal :bonus
           end
           it 'should not be able to calculate its score' do
             @frame.score.must_be_nil
@@ -140,7 +140,7 @@ describe Frame do
             @frame.rolls.must_equal [non_strike_roll, non_strike_spare_roll]
           end
           it 'should change to bonus mode' do
-            @frame.mode.must_equal 'bonus'
+            @frame.mode.must_equal :bonus
           end
           it 'should not be able to calculate its score' do
             @frame.score.must_be_nil
@@ -155,7 +155,7 @@ describe Frame do
             @frame.rolls.must_equal [non_strike_roll, non_strike_non_spare_roll]
           end
           it 'should change to complete mode' do
-            @frame.mode.must_equal 'complete'
+            @frame.mode.must_equal :complete
           end
           it 'should be able to calculate its score' do
             @frame.score.must_equal non_strike_roll + non_strike_non_spare_roll
@@ -192,7 +192,7 @@ describe Frame do
             @frame.rolls.must_equal [strike_roll,strike_roll,strike_roll]
           end
           it 'should change to completed mode' do
-            @frame.mode.must_equal 'complete'
+            @frame.mode.must_equal :complete
           end
           it 'should be able to calculate its score' do
             @frame.score.must_equal strike_roll + strike_roll + strike_roll
@@ -222,7 +222,7 @@ describe Frame do
             @frame.rolls.must_equal [non_strike_roll,non_strike_spare_roll,any_roll]
           end
           it 'should change to completed mode' do
-            @frame.mode.must_equal 'complete'
+            @frame.mode.must_equal :complete
           end
           it 'should be able to calculate its score' do
             @frame.score.must_equal non_strike_roll + non_strike_spare_roll + any_roll
@@ -241,7 +241,7 @@ describe Frame do
         end
         it 'should stay as complete mode' do
           @frame.register_roll any_roll
-          @frame.mode.must_equal 'complete'
+          @frame.mode.must_equal :complete
         end
       end
     end
