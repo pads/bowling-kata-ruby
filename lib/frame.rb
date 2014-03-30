@@ -30,17 +30,27 @@ class Frame
   end
 
   def determine_mode
-
-    if rolls.size==1 && rolls[0] ==10
+    if rolls.size==1 && strike?
       self.mode = :bonus
-    elsif rolls.size==2 && rolls[0] + rolls[1] == 10
+    elsif rolls.size==2 && spare?
       self.mode = :bonus
-    elsif rolls.size==2 && rolls[0] + rolls[1] < 10
+    elsif rolls.size==2 && not_spare_or_strike?
       self.mode = :complete
     elsif rolls.size==3
       self.mode = :complete
     end
+  end
 
+  def strike?
+    rolls[0]==10
+  end
+
+  def spare?
+    rolls[0] + rolls[1] == 10
+  end
+
+  def not_spare_or_strike?
+    rolls[0] + rolls[1] < 10
   end
 
 end
