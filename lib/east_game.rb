@@ -1,11 +1,11 @@
 class EastGame
   def initialize
     @score = 0
-    @rolls = []
+    @frames = []
   end
 
-  def roll(score)
-    @rolls << score
+  def complete_turn(rolls)
+    @frames << rolls
     self
   end
 
@@ -16,12 +16,15 @@ class EastGame
   private
 
   def calculate_score
-    @frames = @rolls.each_slice(2).to_a
-    @frames.each_with_index do |frame, index|
+    @frames.each_with_index do |rolls, index|
       if index > 0 && @frames[index - 1].inject(0){|sum,x| sum + x } == 10
-        @score += frame[0]
+        @score += rolls[0]
       end
-      @score += frame[0] + frame[1]
+
+      @score += rolls[0]
+
+      # Strike!
+      @score += rolls[1] if rolls[1]
     end
     @score
   end

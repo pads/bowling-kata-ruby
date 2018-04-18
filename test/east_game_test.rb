@@ -12,8 +12,8 @@ describe EastGame do
 
   describe 'the worst game' do
     it 'should calculate the total score as zero' do
-      20.times do
-        @game.roll(0)
+      10.times do
+        @game.complete_turn([0, 0])
       end
 
       @game
@@ -22,10 +22,10 @@ describe EastGame do
     end
   end
 
-  describe 'rolling ones' do
+  describe 'complete_turning ones' do
     it 'should calculate the total score as 20' do
-      20.times do
-        @game.roll(1)
+      10.times do
+        @game.complete_turn([1, 1])
       end
 
       @game
@@ -34,21 +34,36 @@ describe EastGame do
     end
   end
 
-  describe 'rolling a spare, then one, then all zeros' do
+  describe 'complete_turning a spare, then one, then zero' do
     it 'should calculate the total score as 12' do
-      2.times do
-        @game.roll(5)
-      end
-
-      @game.roll(1)
-
-      17.times do
-        @game.roll(0)
-      end
+      @game.complete_turn([5, 5]).complete_turn([1, 0])
 
       @game
         .render_total_score(@test_renderer)
         .must_equal 12
+    end
+  end
+
+  describe 'complete_turning two spares and the rest' do
+    it 'should calculate the total score as 27' do
+      @game
+        .complete_turn([6, 4])
+        .complete_turn([5, 5])
+        .complete_turn([1, 0])
+
+      @game
+        .render_total_score(@test_renderer)
+        .must_equal 27
+    end
+  end
+
+  describe 'complete_turning a strike' do
+    it 'should calculate the total score as 10' do
+      @game.complete_turn([10])
+
+      @game
+        .render_total_score(@test_renderer)
+        .must_equal 10
     end
   end
 end
