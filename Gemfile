@@ -1,9 +1,9 @@
 source 'https://rubygems.org'
-ruby '2.0.0'
+# ruby '2.0.0'
 
 gem 'rake'
-gem 'guard'
+# gem 'guard'
 gem 'minitest'
-gem 'guard-minitest'
+# gem 'guard-minitest'
 gem 'turn'
 gem 'pry'
